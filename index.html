@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="vi" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ôn Tập Trắc Nghiệm Vật Lý Đại Cương - EPU (362 Câu Có Đáp Án Gốc)</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚛️</text></svg>">
+</head>
+<body>
+
+  <!-- Header -->
+  <header class="app-header">
+    <div class="header-inner">
+      <a href="#" class="brand" onclick="app.setMode('practice'); return false;">
+        <div class="brand-icon">⚛️</div>
+        <div class="brand-text">
+          <h1>VẬT LÝ ĐẠI CƯƠNG EPU</h1>
+          <p>362 Câu Hỏi Trắc Nghiệm • Đáp Án Bôi Màu Gốc</p>
+        </div>
+      </a>
+      <div class="header-actions">
+        <button class="icon-btn" id="soundBtn" title="Bật/Tắt âm thanh" onclick="app.toggleSound()">🔔</button>
+        <button class="icon-btn" id="themeBtn" title="Chuyển chế độ Sáng/Tối" onclick="app.toggleTheme()">🌙</button>
+        <button class="icon-btn" id="resetBtn" title="Cài đặt / Đặt lại tiến độ" onclick="app.openResetModal()">⚙️</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Navigation Tabs -->
+  <nav class="nav-tabs-wrapper">
+    <div class="nav-tabs">
+      <button class="nav-tab active" data-mode="practice" onclick="app.setMode('practice')">
+        <span>🎯 Luyện tập</span>
+        <span class="nav-badge" id="tabPracticeCount">362</span>
+      </button>
+      <button class="nav-tab" data-mode="exam" onclick="app.setMode('exam')">
+        <span>⏱️ Thi thử</span>
+      </button>
+      <button class="nav-tab" data-mode="flashcard" onclick="app.setMode('flashcard')">
+        <span>🃏 Flashcard</span>
+      </button>
+      <button class="nav-tab" data-mode="mistakes" onclick="app.setMode('mistakes')">
+        <span>❌ Ôn câu sai</span>
+        <span class="nav-badge" id="tabMistakeCount">0</span>
+      </button>
+      <button class="nav-tab" data-mode="bookmarks" onclick="app.setMode('bookmarks')">
+        <span>⭐ Đã đánh dấu</span>
+        <span class="nav-badge" id="tabBookmarkCount">0</span>
+      </button>
+      <button class="nav-tab" data-mode="table" onclick="app.setMode('table')">
+        <span>📋 Bảng đáp án</span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- Main App Container -->
+  <main class="app-container">
+
+    <!-- Controls Bar -->
+    <section class="controls-bar" id="controlsBar">
+      <div class="chapter-select-wrap">
+        <select class="custom-select" id="chapterSelect" onchange="app.changeChapter(this.value)">
+          <option value="all">📚 Tất cả 10 Chương (362 câu)</option>
+          <option value="1">Chương 1: Động học chất điểm (40 câu)</option>
+          <option value="2">Chương 2: Động lực học chất điểm (38 câu)</option>
+          <option value="3">Chương 3: Động lực học hệ chất điểm - Vật rắn (25 câu)</option>
+          <option value="4">Chương 4: Năng lượng - Công - Định luật bảo toàn (38 câu)</option>
+          <option value="5">Chương 5: Nhiệt động lực học - Khí lý tưởng (36 câu)</option>
+          <option value="6">Chương 6: Điện trường tĩnh (41 câu)</option>
+          <option value="7">Chương 7: Vật dẫn - Tụ điện - Năng lượng (32 câu)</option>
+          <option value="8">Chương 8: Từ trường (30 câu)</option>
+          <option value="9">Chương 9: Hiện tượng cảm ứng điện từ (28 câu)</option>
+          <option value="10">Chương 10: Quang học - Bức xạ nhiệt & Lượng tử (54 câu)</option>
+        </select>
+      </div>
+
+      <div class="search-wrap">
+        <span class="search-icon">🔍</span>
+        <input type="text" class="search-input" id="searchInput" placeholder="Tìm theo số câu hoặc từ khóa..." oninput="app.handleSearch(this.value)">
+      </div>
+
+      <div class="stats-chips">
+        <div class="stat-chip total" title="Tổng số câu trong danh mục đang xem">
+          <span>Tổng:</span> <strong id="statTotal">362</strong>
+        </div>
+        <div class="stat-chip correct" title="Số câu đã làm đúng">
+          <span>✓ Đúng:</span> <strong id="statCorrect">0</strong>
+        </div>
+        <div class="stat-chip wrong" title="Số câu làm sai">
+          <span>✗ Sai:</span> <strong id="statWrong">0</strong>
+        </div>
+      </div>
+    </section>
+
+    <!-- Master Progress Bar -->
+    <div class="progress-card" id="progressBarCard">
+      <div class="progress-info">
+        <div class="progress-header">
+          <span id="progressText">Tiến độ ôn tập: 0 / 362 câu (0%)</span>
+          <span id="accuracyText">Độ chính xác: 0%</span>
+        </div>
+        <div class="progress-bar-bg">
+          <div class="progress-bar-fill correct" id="progressBarCorrect" style="width: 0%"></div>
+          <div class="progress-bar-fill wrong" id="progressBarWrong" style="width: 0%"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- VIEW 1: Practice / Single Question Layout -->
+    <div class="study-layout" id="practiceView">
+      <!-- Left: Question Card Area -->
+      <div class="question-card" id="questionCard">
+        <div class="card-header">
+          <div class="card-meta">
+            <span class="badge badge-primary" id="qChapterBadge">Chương 1</span>
+            <span class="badge badge-outline" id="qNumberBadge">Câu 1 / 40 (Mã #1)</span>
+            <span class="badge badge-outline" id="qPageBadge">Trang 1</span>
+          </div>
+          <div class="card-tools">
+            <button class="tool-btn" id="toggleAnnotBtn" onclick="app.toggleAnnotView()" title="Xem trích đoạn bôi màu gốc từ tệp PDF">
+              <span>🎨 Bản gốc bôi màu</span>
+            </button>
+            <button class="tool-btn" id="bookmarkBtn" onclick="app.toggleBookmarkCurrent()" title="Đánh dấu câu hỏi này">
+              <span id="bookmarkIcon">☆</span>
+            </button>
+            <button class="tool-btn" onclick="app.zoomImage()" title="Phóng to ảnh">
+              <span>🔍</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Question Image Box -->
+        <div class="question-img-container" id="imgBox">
+          <img src="" alt="Câu hỏi" class="question-img" id="questionImg">
+          <span class="img-badge-annot" id="annotBadge" style="display: none;">Đang hiện đáp án gốc PDF</span>
+        </div>
+
+        <!-- Options Buttons -->
+        <div class="options-grid" id="optionsGrid">
+          <button class="opt-btn" data-opt="A" onclick="app.chooseOption('A')">
+            <span class="opt-key">A</span>
+            <span class="opt-label">Phương án A</span>
+          </button>
+          <button class="opt-btn" data-opt="B" onclick="app.chooseOption('B')">
+            <span class="opt-key">B</span>
+            <span class="opt-label">Phương án B</span>
+          </button>
+          <button class="opt-btn" data-opt="C" onclick="app.chooseOption('C')">
+            <span class="opt-key">C</span>
+            <span class="opt-label">Phương án C</span>
+          </button>
+          <button class="opt-btn" data-opt="D" onclick="app.chooseOption('D')">
+            <span class="opt-key">D</span>
+            <span class="opt-label">Phương án D</span>
+          </button>
+        </div>
+
+        <!-- Feedback Banner -->
+        <div class="answer-banner" id="answerBanner">
+          <div class="banner-title" id="bannerTitle">✓ Chính xác!</div>
+          <div class="banner-desc" id="bannerDesc">Đáp án đúng là A.</div>
+        </div>
+
+        <!-- Navigation Bar -->
+        <div class="card-nav">
+          <div>
+            <button class="btn btn-secondary" onclick="app.prevQuestion()">⬅️ Câu trước [←]</button>
+            <button class="btn btn-primary" onclick="app.nextQuestion()">Câu sau [→] ➡️</button>
+          </div>
+          <div>
+            <button class="btn btn-outline" onclick="app.revealAnswer()" title="Xem ngay đáp án đúng [Space]">💡 Hiện đáp án</button>
+            <button class="btn btn-outline" onclick="app.randomQuestion()" title="Chuyển đến câu ngẫu nhiên">🎲 Ngẫu nhiên</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: Question Palette Grid -->
+      <aside class="palette-card">
+        <div class="palette-header">
+          <h3 id="paletteTitle">Danh sách câu hỏi</h3>
+          <span style="font-size: 0.8rem; color: var(--text-muted);" id="paletteCount">362 câu</span>
+        </div>
+        <div class="palette-legend">
+          <div class="legend-item"><span class="legend-dot empty"></span> Chưa làm</div>
+          <div class="legend-item"><span class="legend-dot correct"></span> Đúng</div>
+          <div class="legend-item"><span class="legend-dot wrong"></span> Sai</div>
+          <div class="legend-item"><span class="legend-dot marked"></span> Đã lưu</div>
+        </div>
+        <div class="palette-grid" id="paletteGrid">
+          <!-- Populated by JS -->
+        </div>
+      </aside>
+    </div>
+
+    <!-- VIEW 2: Exam View -->
+    <div id="examView" style="display: none; flex-direction: column; gap: 1.25rem;">
+      <div class="exam-header">
+        <div>
+          <h2 id="examTitle">KỲ THI THỬ TRẮC NGHIỆM VẬT LÝ ĐẠI CƯƠNG</h2>
+          <p id="examSubtitle">Số câu: 40 câu • Thời gian: 30 phút</p>
+        </div>
+        <div style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
+          <div class="stat-chip" id="examLiveScore" style="display: none; background: rgba(255, 255, 255, 0.2); color: white; font-size: 0.9rem; padding: 0.4rem 0.8rem;">
+            <span>✓ Đúng: <strong id="examLiveCorrect">0</strong></span>
+            <span style="margin: 0 0.25rem;">|</span>
+            <span>✗ Sai: <strong id="examLiveWrong">0</strong></span>
+          </div>
+          <button class="tool-btn" id="examToggleFeedbackBtn" style="background: rgba(255,255,255,0.2); color: white; border-color: rgba(255,255,255,0.4);" onclick="app.toggleExamFeedbackMode()">
+            ⚡ Biết kết quả: BẬT
+          </button>
+          <div class="timer-box" id="examTimer">⏱️ 30:00</div>
+          <button class="btn btn-success" onclick="app.submitExam()">📝 Nộp bài thi</button>
+        </div>
+      </div>
+
+      <div class="study-layout">
+        <div class="question-card" id="examQuestionCard">
+          <div class="card-header">
+            <div class="card-meta">
+              <span class="badge badge-primary" id="examQBadge">Câu 1 / 40</span>
+              <span class="badge badge-outline" id="examChapBadge">Chương 1</span>
+              <span class="badge badge-outline" id="examStatusBadge" style="display: none;">Đã trả lời</span>
+            </div>
+            <div class="card-tools">
+              <button class="tool-btn" id="examToggleAnnotBtn" onclick="app.toggleExamAnnotView()" style="display: none;" title="Xem bản gốc bôi màu PDF">
+                <span>🎨 Bản gốc bôi màu</span>
+              </button>
+              <button class="tool-btn" id="examBookmarkBtn" onclick="app.toggleExamBookmark()">
+                <span id="examBookmarkIcon">☆ Đánh dấu xem lại</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="question-img-container">
+            <img src="" alt="Câu hỏi thi thử" class="question-img" id="examQuestionImg">
+            <span class="img-badge-annot" id="examAnnotBadge" style="display: none;">Đang hiện đáp án gốc PDF</span>
+          </div>
+
+          <div class="options-grid" id="examOptionsGrid">
+            <button class="opt-btn" data-opt="A" onclick="app.chooseExamOption('A')">
+              <span class="opt-key">A</span>
+              <span class="opt-label">Phương án A</span>
+            </button>
+            <button class="opt-btn" data-opt="B" onclick="app.chooseExamOption('B')">
+              <span class="opt-key">B</span>
+              <span class="opt-label">Phương án B</span>
+            </button>
+            <button class="opt-btn" data-opt="C" onclick="app.chooseExamOption('C')">
+              <span class="opt-key">C</span>
+              <span class="opt-label">Phương án C</span>
+            </button>
+            <button class="opt-btn" data-opt="D" onclick="app.chooseExamOption('D')">
+              <span class="opt-key">D</span>
+              <span class="opt-label">Phương án D</span>
+            </button>
+          </div>
+
+          <!-- Exam Answer Feedback Banner (for Instant Mode) -->
+          <div class="answer-banner" id="examAnswerBanner" style="display: none;">
+            <div class="banner-title" id="examBannerTitle">✓ Chính xác!</div>
+            <div class="banner-desc" id="examBannerDesc">Đáp án đúng là A.</div>
+          </div>
+
+          <div class="card-nav">
+            <button class="btn btn-secondary" onclick="app.prevExamQuestion()">⬅️ Câu trước</button>
+            <button class="btn btn-primary" onclick="app.nextExamQuestion()">Câu sau ➡️</button>
+          </div>
+        </div>
+
+        <aside class="palette-card">
+          <div class="palette-header">
+            <h3>Bảng câu hỏi bài thi</h3>
+            <span style="font-size: 0.8rem; color: var(--text-muted);" id="examProgressCount">0/40</span>
+          </div>
+          <div class="palette-grid" id="examPaletteGrid">
+            <!-- Exam Palette buttons -->
+          </div>
+        </aside>
+      </div>
+    </div>
+
+    <!-- VIEW 3: Flashcard View -->
+    <div id="flashcardView" style="display: none;">
+      <div class="flashcard-wrap">
+        <div class="flashcard" id="flashcardElement" onclick="app.flipFlashcard()">
+          <div class="card-meta" style="margin-bottom: 1rem;">
+            <span class="badge badge-primary" id="fcChapter">Chương 1</span>
+            <span class="badge badge-outline" id="fcNumber">Câu 1 / 362</span>
+          </div>
+
+          <div class="question-img-container" style="background: white; min-height: 200px;">
+            <img src="" alt="Flashcard" class="question-img" id="fcImg">
+          </div>
+
+          <div class="answer-banner" id="fcAnswerBanner" style="margin-top: 1.5rem;">
+            <div class="banner-title" id="fcAnswerTitle">Đáp án chính xác: A</div>
+            <div class="banner-desc" id="fcAnswerDesc">Trích đoạn đáp án bôi màu trong PDF</div>
+          </div>
+
+          <div class="flashcard-hint">
+            💡 Nhấp vào thẻ hoặc bấm phím Space để lật thẻ và xem đáp án
+          </div>
+        </div>
+
+        <div style="display: flex; gap: 1rem; width: 100%; max-width: 500px; justify-content: center;">
+          <button class="btn btn-secondary" onclick="app.prevFlashcard()">⬅️ Thẻ trước</button>
+          <button class="btn btn-danger" onclick="app.markFlashcard(false)">❌ Chưa nhớ</button>
+          <button class="btn btn-success" onclick="app.markFlashcard(true)">✓ Đã thuộc</button>
+          <button class="btn btn-secondary" onclick="app.nextFlashcard()">Thẻ sau ➡️</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- VIEW 4: Table View (Full Answer Matrix) -->
+    <div class="table-card" id="tableView" style="display: none;">
+      <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+        <div>
+          <h2>Bảng Tra Cứu Toàn Bộ 362 Câu Hỏi & Đáp Án</h2>
+          <p style="color: var(--text-muted); font-size: 0.85rem;">Nhấp vào bất kỳ câu nào để mở luyện tập ngay câu đó</p>
+        </div>
+        <button class="btn btn-outline" onclick="window.print()">🖨️ In / Xuất PDF</button>
+      </div>
+
+      <div class="data-table-wrap">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th style="width: 60px;">Mã</th>
+              <th style="width: 140px;">Chương</th>
+              <th style="width: 70px;">Câu</th>
+              <th style="width: 70px;">Trang</th>
+              <th>Nội dung câu hỏi tóm tắt</th>
+              <th style="width: 90px; text-align: center;">Đáp án</th>
+              <th style="width: 100px; text-align: center;">Thao tác</th>
+            </tr>
+          </thead>
+          <tbody id="tableBody">
+            <!-- Populated by JS -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Image Zoom Modal -->
+  <div class="modal-overlay" id="zoomModal" onclick="app.closeZoomModal()">
+    <div class="modal-content" style="max-width: 90vw; background: white;" onclick="event.stopPropagation()">
+      <div class="modal-header">
+        <h2 id="zoomTitle">Phóng to câu hỏi</h2>
+        <button class="close-btn" onclick="app.closeZoomModal()">&times;</button>
+      </div>
+      <div style="display: flex; justify-content: center; overflow: auto; padding: 1rem;">
+        <img src="" id="zoomImg" style="max-width: 100%; height: auto;" alt="Zoomed Question">
+      </div>
+    </div>
+  </div>
+
+  <!-- Exam Setup Modal -->
+  <div class="modal-overlay" id="examSetupModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Thiết lập kỳ thi thử</h2>
+        <button class="close-btn" onclick="app.closeExamSetupModal()">&times;</button>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 1rem;">
+        <div>
+          <label style="font-weight: 700; font-size: 0.9rem; display: block; margin-bottom: 0.4rem;">Phạm vi kiến thức:</label>
+          <select class="custom-select" id="examScopeSelect">
+            <option value="all">Toàn bộ 10 chương (Toàn bộ ngân hàng đề)</option>
+            <option value="1">Chương 1: Động học chất điểm</option>
+            <option value="2">Chương 2: Động lực học chất điểm</option>
+            <option value="3">Chương 3: Động lực học hệ chất điểm - Vật rắn</option>
+            <option value="4">Chương 4: Năng lượng - Công - Định luật bảo toàn</option>
+            <option value="5">Chương 5: Nhiệt động lực học - Khí lý tưởng</option>
+            <option value="6">Chương 6: Điện trường tĩnh</option>
+            <option value="7">Chương 7: Vật dẫn - Tụ điện - Năng lượng</option>
+            <option value="8">Chương 8: Từ trường</option>
+            <option value="9">Chương 9: Hiện tượng cảm ứng điện từ</option>
+            <option value="10">Chương 10: Quang học - Bức xạ nhiệt & Lượng tử</option>
+          </select>
+        </div>
+        <div>
+          <label style="font-weight: 700; font-size: 0.9rem; display: block; margin-bottom: 0.4rem;">Số lượng câu hỏi & Thời gian:</label>
+          <select class="custom-select" id="examPresetSelect">
+            <option value="20_15">20 câu (15 phút) - Khởi động nhanh</option>
+            <option value="40_30" selected>40 câu (30 phút) - Đề thi tiêu chuẩn</option>
+            <option value="50_45">50 câu (45 phút) - Tổng ôn tập</option>
+            <option value="all_60">Toàn bộ câu của chương (60 phút)</option>
+          </select>
+        </div>
+        <div>
+          <label style="font-weight: 700; font-size: 0.9rem; display: block; margin-bottom: 0.4rem;">Chế độ hiển thị kết quả:</label>
+          <select class="custom-select" id="examFeedbackModeSelect">
+            <option value="instant" selected>⚡ Biết kết quả ngay khi chọn đáp án (Không cần nộp bài)</option>
+            <option value="deferred">📝 Chỉ biết kết quả sau khi nộp bài (Thi thử tiêu chuẩn)</option>
+          </select>
+        </div>
+        <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem;">
+          <input type="checkbox" id="shuffleExamCheck" checked style="width: 18px; height: 18px;">
+          <label for="shuffleExamCheck" style="font-size: 0.9rem; font-weight: 600;">Xáo trộn thứ tự ngẫu nhiên các câu hỏi</label>
+        </div>
+      </div>
+      <div style="display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 1rem;">
+        <button class="btn btn-secondary" onclick="app.closeExamSetupModal()">Hủy</button>
+        <button class="btn btn-primary" onclick="app.startExam()">🚀 Bắt đầu làm bài</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Exam Result Modal -->
+  <div class="modal-overlay" id="examResultModal">
+    <div class="modal-content" style="max-width: 650px;">
+      <div class="modal-header">
+        <h2>KẾT QUẢ BÀI THI THỬ</h2>
+        <button class="close-btn" onclick="app.closeExamResultModal()">&times;</button>
+      </div>
+      <div style="text-align: center; padding: 1.5rem 0; border-bottom: 1px solid var(--border-color);">
+        <div style="font-size: 3.5rem; font-weight: 900; color: var(--primary);" id="resultScore">8.5</div>
+        <div style="font-size: 1.1rem; font-weight: 700; margin-top: 0.25rem;" id="resultEvaluation">XUẤT SẮC!</div>
+        <p style="color: var(--text-muted); margin-top: 0.5rem;" id="resultDetails">Số câu đúng: 34 / 40 câu • Thời gian hoàn thành: 18 phút 24 giây</p>
+      </div>
+      <div style="display: flex; justify-content: center; gap: 1rem; margin-top: 1rem;">
+        <button class="btn btn-primary" onclick="app.closeExamResultModal(); app.reviewExamMistakes();">Ôn các câu làm sai</button>
+        <button class="btn btn-secondary" onclick="app.closeExamResultModal(); app.openExamSetup();">Thi lại đề mới</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Reset Confirmation Modal -->
+  <div class="modal-overlay" id="resetModal">
+    <div class="modal-content" style="max-width: 480px;">
+      <div class="modal-header">
+        <h2>Cài đặt & Đặt lại dữ liệu</h2>
+        <button class="close-btn" onclick="app.closeResetModal()">&times;</button>
+      </div>
+      <p style="color: var(--text-muted); font-size: 0.9rem;">
+        Bạn có muốn đặt lại toàn bộ lịch sử ôn tập, kết quả đúng/sai và dấu trang đã lưu để bắt đầu lại từ đầu không?
+      </p>
+      <div style="display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 1rem;">
+        <button class="btn btn-secondary" onclick="app.closeResetModal()">Đóng</button>
+        <button class="btn btn-danger" onclick="app.confirmResetAll()">⚠️ Xóa và làm lại từ đầu</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="app-footer">
+    <p>Hệ thống Ôn tập Trắc nghiệm Vật lý đại cương EPU • 362 câu hỏi chuẩn ngân hàng đề kèm đáp án bôi màu gốc</p>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
